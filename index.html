@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Casino Royal - Final Version</title>
+    <title>Casino Royal - Sieu Cap V10</title>
     <script src="https://gstatic.com"></script>
     <script src="https://gstatic.com"></script>
     <style>
@@ -15,81 +15,73 @@
         .plate { width: 200px; height: 200px; background: #ecf0f1; border-radius: 50%; border: 10px solid #95a5a6; display: flex; justify-content: center; align-items: center; gap: 8px; }
         .dice { width: 45px; height: 45px; background: white; color: #333; border-radius: 10px; display: flex; justify-content: center; align-items: center; font-size: 26px; font-weight: bold; }
         .bowl { width: 215px; height: 215px; background: radial-gradient(circle, #f1c40f, #d35400); border-radius: 50%; position: absolute; z-index: 10; transition: 0.8s; border: 2px solid #e67e22; box-shadow: inset 0 0 20px rgba(0,0,0,0.5); cursor: pointer; }
-        .bowl.open { transform: translateY(-160px) rotate(30deg); opacity: 0.9; pointer-events: none; }
+        .bowl.open { transform: translateY(-150px) rotate(30deg); opacity: 0.9; pointer-events: none; }
         .shake-anim { animation: shake 0.15s infinite; }
         @keyframes shake { 0% { transform: rotate(3deg); } 50% { transform: rotate(-3deg); } 100% { transform: rotate(3deg); } }
-        .zones { display: flex; justify-content: space-around; margin: 25px 0; }
-        .circle-btn { width: 110px; height: 110px; border-radius: 50%; display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; border: 4px solid rgba(255,255,255,0.2); transition: 0.2s; }
+        .circle-btn { width: 100px; height: 100px; border-radius: 50%; display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; border: 4px solid rgba(255,255,255,0.2); }
         .btn-main { background: var(--gold); color: black; border: none; padding: 15px; border-radius: 30px; font-weight: bold; cursor: pointer; width: 100%; font-size: 1.1rem; }
         .admin-only { background: rgba(183, 28, 28, 0.9); padding: 15px; border-radius: 15px; margin-top: 20px; border: 2px solid var(--gold); display: none; }
         .overlay { position: fixed; inset: 0; background: var(--bg); display: flex; justify-content: center; align-items: center; z-index: 9999; }
-        input { padding: 12px; border-radius: 25px; border: none; width: 80%; text-align: center; font-size: 1rem; margin: 5px 0; }
+        input { padding: 12px; border-radius: 25px; border: none; width: 80%; text-align: center; font-size: 1rem; margin: 5px 0; color: #000; font-weight: bold; }
     </style>
 </head>
 <body>
-
 <div id="login-screen" class="overlay">
     <div style="background:#1e272e; padding:40px; border-radius:20px; text-align:center; border: 2px solid var(--gold); width: 80%;">
         <h1 style="color:var(--gold)">🎰 CASINO ROYAL</h1>
-        <input type="text" id="username" placeholder="Tên của ní...">
+        <input type="text" id="username" placeholder="Gõ 'admin' để xóc đĩa...">
         <button class="btn-main" style="margin-top:20px" onclick="vaoSong()">VÀO SÒNG</button>
     </div>
 </div>
-
 <div class="app-container">
     <div class="header">
         <div>👤 <span id="u-name">...</span></div>
-        <div style="color:var(--gold)">💰 <span id="u-balance">0</span></div>
+        <div style="color:var(--gold)">💰 <span id="u-balance">0</span> xu</div>
     </div>
     <div class="table">
-        <div class="plate">
-            <div class="dice" id="d1">?</div>
-            <div class="dice" id="d2">?</div>
-            <div class="dice" id="d3">?</div>
-        </div>
+        <div class="plate"><div class="dice" id="d1">?</div><div class="dice" id="d2">?</div><div class="dice" id="d3">?</div></div>
         <div id="bowl" class="bowl"></div>
     </div>
     <h2 id="status" style="color:var(--gold)">CHỜ NHÀ CÁI XÓC...</h2>
-    <div class="zones">
+    <div class="zones" style="display:flex; justify-content:space-around; margin:20px 0;">
         <div id="z-tai" class="circle-btn" style="background:var(--red)" onclick="pick('Tai')"><b>TÀI</b></div>
         <div id="z-xiu" class="circle-btn" style="background:var(--blue)" onclick="pick('Xiu')"><b>XỈU</b></div>
     </div>
     <input type="number" id="bet-amount" placeholder="Nhập xu cược...">
-    
     <div id="admin-panel" class="admin-only">
         <div id="hack-view" style="color:#0f0; font-weight:bold; margin-bottom:10px;">SOI: ---</div>
-        <button class="btn-main" onclick="xocDia()">🎲 XÓC ĐĨA CHUNG</button>
-        <button class="btn-main" id="btn-open" onclick="moBat()" style="display:none; background:#2ecc71; margin-top:10px">🔓 MỞ BÁT CHUNG</button>
-        <hr style="margin:15px 0">
-        <input type="text" id="adm-target" placeholder="Tên người nhận">
-        <input type="number" id="adm-amount" placeholder="Số xu">
-        <button onclick="adminBuff()" style="width:100%; padding:10px; border-radius:10px; font-weight:bold; cursor:pointer">BƠM TIỀN</button>
+        <button class="btn-main" onclick="nutXoc()">🎲 XÓC ĐĨA CHUNG</button>
+        <button class="btn-main" id="btn-open" onclick="nutMo()" style="display:none; background:#2ecc71; margin-top:10px">🔓 MỞ BÁT CHUNG</button>
     </div>
 </div>
-
 <script>
-let player = "", side = "", isAdmin = false, db = null;
+const config = {
+    apiKey: "AIzaSyAPg1xGWBqvg7USMkZ8_TAJ3zvUVOffSIA",
+    authDomain: "://firebaseapp.com",
+    databaseURL: "https://firebasedatabase.app", 
+    projectId: "casinobanbe",
+    appId: "1:670247607539:web:8201c606ff6d223d1b2b86"
+};
+firebase.initializeApp(config);
+const db = firebase.database();
+let player = "", side = "", isAdmin = false;
 
 function vaoSong() {
-    const name = document.getElementById("username").value.trim();
-    if(!name) return alert("Nhập tên ní ơi!");
-    
-    player = name;
+    const nameInp = document.getElementById("username").value.trim();
+    if(!nameInp) return alert("Tên đâu ní?");
+    player = nameInp;
     document.getElementById("login-screen").style.display = "none";
     document.getElementById("u-name").innerText = player;
-
     if(!localStorage.getItem(player)) localStorage.setItem(player, 1000);
     if(player.toLowerCase() === "admin") {
         isAdmin = true;
         document.getElementById("admin-panel").style.display = "block";
     }
-    updateUI();
-    connectFirebase();
+    updateUI(); listen();
 }
 
 function updateUI() {
-    let m = localStorage.getItem(player) || 0;
-    document.getElementById("u-balance").innerText = parseInt(m).toLocaleString() + " xu";
+    document.getElementById("u-balance").innerText = parseInt(localStorage.getItem(player)).toLocaleString();
 }
 
 function pick(s) {
@@ -98,39 +90,21 @@ function pick(s) {
     document.getElementById("z-xiu").style.border = (s==='Xiu')?"5px solid #fff":"4px solid rgba(255,255,255,0.2)";
 }
 
-function connectFirebase() {
-    const config = {
-        apiKey: "AIzaSyAPg1xGWBqvg7USMkZ8_TAJ3zvUVOffSIA",
-        authDomain: "://firebaseapp.com",
-        databaseURL: "https://firebasedatabase.app", 
-        projectId: "casinobanbe",
-        appId: "1:670247607539:web:8201c606ff6d223d1b2b86"
-    };
-    try {
-        if (!firebase.apps.length) firebase.initializeApp(config);
-        db = firebase.database();
-        listen();
-    } catch(e) { console.log("Firebase Error"); }
-}
-
-function xocDia() {
-    if(!db) return;
+function nutXoc() {
     const d1 = Math.floor(Math.random()*6)+1;
     const d2 = Math.floor(Math.random()*6)+1;
     const d3 = Math.floor(Math.random()*6)+1;
-    db.ref('game').set({ status: "shaking", d1: d1, d2: d2, d3: d3 });
+    db.ref('sieu_cap_v10').set({ status: "shaking", d1: d1, d2: d2, d3: d3, time: Date.now() });
 }
 
-function moBat() {
-    if(!db) return;
-    db.ref('game/status').set("open");
+function nutMo() {
+    db.ref('sieu_cap_v10/status').set("open");
 }
 
 function listen() {
-    db.ref('game').on('value', (snap) => {
+    db.ref('sieu_cap_v10').on('value', (snap) => {
         const data = snap.val(); if(!data) return;
         const bowl = document.getElementById("bowl");
-
         if(data.status === "shaking") {
             bowl.classList.remove("open"); bowl.classList.add("shake-anim");
             document.getElementById("status").innerText = "ĐANG XÓC...";
@@ -154,11 +128,6 @@ function listen() {
             if(isAdmin) document.getElementById("btn-open").style.display = "none";
         }
     });
-}
-
-function adminBuff() {
-    const t = document.getElementById("adm-target").value.trim(), a = parseInt(document.getElementById("adm-amount").value);
-    if(t && a) { localStorage.setItem(t, (parseInt(localStorage.getItem(t))||0)+a); alert("Bơm xong!"); updateUI(); }
 }
 </script>
 </body>
