@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Casino Royal - Final Version</title>
+    <title>Casino Royal - Final Pro</title>
     <script src="https://gstatic.com"></script>
     <script src="https://gstatic.com"></script>
     <style>
         :root { --gold: #f1c40f; --red: #e74c3c; --blue: #3498db; --bg: #0a2e1a; }
         body { background: var(--bg); color: white; font-family: sans-serif; display: flex; justify-content: center; margin: 0; min-height: 100vh; overflow-x: hidden; }
-        .app-container { width: 100%; max-width: 450px; padding: 15px; text-align: center; }
+        .app-container { width: 100%; max-width: 450px; padding: 20px; text-align: center; }
         .header { display: flex; justify-content: space-between; background: rgba(0,0,0,0.6); padding: 15px; border-radius: 15px; border: 1px solid var(--gold); margin-bottom: 20px; }
         .table { position: relative; height: 220px; display: flex; justify-content: center; align-items: center; }
         .plate { width: 200px; height: 200px; background: #ecf0f1; border-radius: 50%; border: 10px solid #95a5a6; display: flex; justify-content: center; align-items: center; gap: 8px; }
@@ -23,7 +23,7 @@
         .btn-main { background: var(--gold); color: black; border: none; padding: 15px; border-radius: 30px; font-weight: bold; cursor: pointer; width: 100%; font-size: 1.1rem; }
         .admin-only { background: rgba(183, 28, 28, 0.9); padding: 15px; border-radius: 15px; margin-top: 20px; border: 2px solid var(--gold); display: none; }
         .overlay { position: fixed; inset: 0; background: var(--bg); display: flex; justify-content: center; align-items: center; z-index: 9999; }
-        input { padding: 12px; border-radius: 25px; border: none; width: 80%; text-align: center; font-size: 1rem; margin: 5px 0; }
+        input { padding: 12px; border-radius: 25px; border: none; width: 80%; text-align: center; font-size: 1rem; margin: 5px 0; color: #000; }
     </style>
 </head>
 <body>
@@ -31,7 +31,7 @@
 <div id="login-screen" class="overlay">
     <div style="background:#1e272e; padding:40px; border-radius:20px; text-align:center; border: 2px solid var(--gold); width: 80%;">
         <h1 style="color:var(--gold)">🎰 CASINO ROYAL</h1>
-        <input type="text" id="username" placeholder="Tên của ní...">
+        <input type="text" id="username" placeholder="Nhập tên ní ơi...">
         <button class="btn-main" style="margin-top:20px" onclick="vaoSong()">VÀO SÒNG</button>
     </div>
 </div>
@@ -42,11 +42,7 @@
         <div style="color:var(--gold)">💰 <span id="u-balance">0</span></div>
     </div>
     <div class="table">
-        <div class="plate">
-            <div class="dice" id="d1">?</div>
-            <div class="dice" id="d2">?</div>
-            <div class="dice" id="d3">?</div>
-        </div>
+        <div class="plate"><div class="dice" id="d1">?</div><div class="dice" id="d2">?</div><div class="dice" id="d3">?</div></div>
         <div id="bowl" class="bowl"></div>
     </div>
     <h2 id="status" style="color:var(--gold)">CHỜ NHÀ CÁI...</h2>
@@ -55,37 +51,40 @@
         <div id="z-xiu" class="circle-btn" style="background:var(--blue)" onclick="pick('Xiu')"><b>XỈU</b></div>
     </div>
     <input type="number" id="bet-amount" placeholder="Nhập xu cược...">
-    
     <div id="admin-panel" class="admin-only">
         <div id="hack-view" style="color:#0f0; font-weight:bold; margin-bottom:10px;">SOI: ---</div>
         <button class="btn-main" onclick="xocDia()">🎲 XÓC ĐĨA CHUNG</button>
         <button class="btn-main" id="btn-open" onclick="moBat()" style="display:none; background:#2ecc71; margin-top:10px">🔓 MỞ BÁT CHUNG</button>
-        <hr style="margin:15px 0">
-        <input type="text" id="adm-target" placeholder="Tên người nhận">
-        <input type="number" id="adm-amount" placeholder="Số xu">
+        <hr style="margin:15px 0"><input type="text" id="adm-target" placeholder="Tên người nhận"><input type="number" id="adm-amount" placeholder="Số xu">
         <button onclick="adminBuff()" style="width:100%; padding:10px; border-radius:10px; font-weight:bold; cursor:pointer">BƠM TIỀN</button>
     </div>
 </div>
 
 <script>
 let player = "", side = "", isAdmin = false, db = null;
+const config = {
+    apiKey: "AIzaSyAPg1xGWBqvg7USMkZ8_TAJ3zvUVOffSIA",
+    authDomain: "://firebaseapp.com",
+    databaseURL: "https://firebasedatabase.app", 
+    projectId: "casinobanbe",
+    appId: "1:670247607539:web:8201c606ff6d223d1b2b86"
+};
 
-// 1. VÀO SÒNG (Ưu tiên ẩn màn hình ngay)
 function vaoSong() {
     const name = document.getElementById("username").value.trim();
-    if(!name) return alert("Nhập tên ní ơi!");
-    
+    if(!name) return alert("Tên đâu ní?");
     player = name;
     document.getElementById("login-screen").style.display = "none";
     document.getElementById("u-name").innerText = player;
-
     if(!localStorage.getItem(player)) localStorage.setItem(player, 1000);
     if(player.toLowerCase() === "admin") {
         isAdmin = true;
         document.getElementById("admin-panel").style.display = "block";
     }
     updateUI();
-    connectFirebase();
+    if (!firebase.apps.length) firebase.initializeApp(config);
+    db = firebase.database();
+    listen();
 }
 
 function updateUI() {
@@ -99,41 +98,23 @@ function pick(s) {
     document.getElementById("z-xiu").style.border = (s==='Xiu')?"5px solid #fff":"4px solid rgba(255,255,255,0.2)";
 }
 
-// 2. KẾT NỐI MẠNG
-function connectFirebase() {
-    const config = {
-        apiKey: "AIzaSyAPg1xGWBqvg7USMkZ8_TAJ3zvUVOffSIA",
-        authDomain: "://firebaseapp.com",
-        databaseURL: "https://firebasedatabase.app", 
-        projectId: "casinobanbe",
-        appId: "1:670247607539:web:8201c606ff6d223d1b2b86"
-    };
-    try {
-        if (!firebase.apps.length) firebase.initializeApp(config);
-        db = firebase.database();
-        listen();
-    } catch(e) { console.log("Firebase Error"); }
-}
-
 function xocDia() {
     if(!db) return;
     const d = [Math.floor(Math.random()*6)+1, Math.floor(Math.random()*6)+1, Math.floor(Math.random()*6)+1];
-    db.ref('game').set({ status: "shaking", dice: d });
+    db.ref('game_data').set({ status: "shaking", dice: d }).catch(e => alert("Lỗi ghi Firebase: " + e.message));
 }
 
 function moBat() {
     if(!db) return;
-    db.ref('game/status').set("open");
+    db.ref('game_data/status').set("open");
 }
 
 function listen() {
-    db.ref('game').on('value', (snap) => {
+    db.ref('game_data').on('value', (snap) => {
         const data = snap.val(); if(!data) return;
         const bowl = document.getElementById("bowl");
-
         if(data.status === "shaking") {
-            bowl.classList.remove("open"); bowl.classList.add("shake-anim");
-            document.getElementById("status").innerText = "ĐANG XÓC...";
+            bowl.classList.remove("open"); bowl.classList.add("shake-anim"); document.getElementById("status").innerText = "ĐANG XÓC...";
             if(isAdmin) {
                 document.getElementById("btn-open").style.display = "block";
                 let s = data.dice[0] + data.dice[1] + data.dice[2];
@@ -142,23 +123,36 @@ function listen() {
         }
         if(data.status === "open") {
             bowl.classList.remove("shake-anim"); bowl.classList.add("open");
-            let d = data.dice, s = d[0]+d[1]+d[2], res = (s>=11)?"Tai":"Xiu";
-            document.getElementById("d1").innerText = d[0]; document.getElementById("d2").innerText = d[1]; document.getElementById("d3").innerText = d[2];
+            let s = data.dice[0] + data.dice[1] + data.dice[2], res = (s>=11)?"Tai":"Xiu";
+            document.getElementById("d1").innerText = data.dice[0]; document.getElementById("d2").innerText = data.dice[1]; document.getElementById("d3").innerText = data.dice[2];
             document.getElementById("status").innerText = s + " - " + res.toUpperCase();
             if(side !== "") {
                 let bal = parseInt(localStorage.getItem(player)), bet = parseInt(document.getElementById("bet-amount").value)||0;
                 let nB = (side === res)?(bal+bet):(bal-bet);
                 localStorage.setItem(player, nB); updateUI(); side = "";
-                setTimeout(()=>alert(nB>=bal?"HÚP! 🎉":"THUA RỒI! 💸"), 200);
+                setTimeout(()=>alert(nB>=bal?"HÚP! 🎉":"THUA RỒI! 💸"), 300);
             }
             if(isAdmin) document.getElementById("btn-open").style.display = "none";
+        }
+    });
+
+    db.ref('buffs/' + player).on('value', (snap) => {
+        const amount = snap.val();
+        if(amount) {
+            let current = parseInt(localStorage.getItem(player)) || 0;
+            localStorage.setItem(player, current + amount);
+            updateUI();
+            alert("Admin bơm cho ní " + amount + " xu!");
+            db.ref('buffs/' + player).remove();
         }
     });
 }
 
 function adminBuff() {
     const t = document.getElementById("adm-target").value.trim(), a = parseInt(document.getElementById("adm-amount").value);
-    if(t && a) { localStorage.setItem(t, (parseInt(localStorage.getItem(t))||0)+a); alert("Bơm xong!"); updateUI(); }
+    if(t && a && db) {
+        db.ref('buffs/' + t).set(a).then(() => alert("Đã gửi lệnh bơm!")).catch(e => alert("Lỗi buff: " + e.message));
+    }
 }
 </script>
 </body>
