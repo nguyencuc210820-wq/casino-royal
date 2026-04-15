@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html>
 <head>
     <meta charset="UTF-8">
     <title>Casino Royal Pro - Nhà Cái Cầm Cái</title>
-    <!-- Nhúng đúng bộ thư viện chuẩn của Google -->
+    <!-- Nhúng thư viện Firebase chuẩn -->
     <script src="https://gstatic.com"></script>
     <script src="https://gstatic.com"></script>
     <style>
@@ -40,28 +40,28 @@
         </div>
 
         <div id="admin-panel">
-            <p style="color:gold;">MÀN HÌNH NHÀ CÁI</p>
+            <p style="color:gold; font-weight:bold;">QUYỀN LỰC NHÀ CÁI</p>
             <div id="soi-kq"></div>
             <button class="btn" onclick="xoc()">🎲 XÓC ĐĨA</button>
             <button class="btn" style="background:lime" onclick="mo()">🔓 MỞ BÁT</button>
             <hr>
+            <p>BƠM TIỀN CHO ĐỆ</p>
             <input type="text" id="target" placeholder="Tên đệ nhận">
             <input type="number" id="buff-amt" placeholder="Số xu">
-            <button class="btn" style="background:white" onclick="buff()">BƠM TIỀN</button>
+            <button class="btn" style="background:white" onclick="buff()">XÁC NHẬN BƠM</button>
         </div>
     </div>
 
 <script>
-// Dán đúng thông tin của ní vào đây
-const firebaseConfig = {
+// CONFIG ĐÃ CẬP NHẬT ĐÚNG DATABASE URL CỦA NÍ
+var firebaseConfig = {
   apiKey: "AIzaSyAPg1xGWBqvg7USMkZ8_TAJ3zvUVOffSIA",
   authDomain: "://firebaseapp.com",
-  databaseURL: "https://firebasedatabase.app",
+  databaseURL: "https://firebasedatabase.app", 
   projectId: "casinobanbe",
   appId: "1:670247607539:web:8201c606ff6d223d1b2b86"
 };
 
-// Khởi tạo Firebase kiểu cũ cho chắc chắn
 firebase.initializeApp(firebaseConfig);
 var db = firebase.database();
 var user = "", side = "";
@@ -69,7 +69,6 @@ var user = "", side = "";
 function login() {
     user = document.getElementById("uname").value.trim();
     if(!user) { alert("Nhập tên đã ní!"); return; }
-    
     if(!localStorage.getItem(user)) localStorage.setItem(user, 10000);
     
     document.getElementById("login-box").style.display = "none";
@@ -79,7 +78,6 @@ function login() {
     if(user.toLowerCase() === "admin") {
         document.getElementById("admin-panel").style.display = "block";
     }
-    
     updateUI();
     listenServer();
 }
@@ -89,7 +87,7 @@ function updateUI() {
     document.getElementById("m").innerText = parseInt(money).toLocaleString(); 
 }
 
-function dat(s) { side = s; alert("Đã đặt: " + s.toUpperCase()); }
+function dat(s) { side = s; alert("Đã chốt: " + s.toUpperCase()); }
 
 function xoc() {
     var d1 = Math.floor(Math.random()*6)+1;
@@ -105,14 +103,13 @@ function buff() {
     var a = parseInt(document.getElementById("buff-amt").value);
     if(t && a) {
         db.ref('buffs/' + t).set({ amount: a, t: Date.now() });
-        alert("Đã bơm tiền!");
+        alert("Đã gửi lệnh bơm " + a + " xu cho " + t);
     }
 }
 
 function listenServer() {
-    db.ref('shaking').on('value', function(snapshot) {
-        var data = snapshot.val(); 
-        if(!data) return;
+    db.ref('shaking').on('value', function(snap) {
+        var data = snap.val(); if(!data) return;
         var b = document.getElementById("bat");
         if(data.st === "xoc") {
             b.classList.remove("open");
@@ -130,7 +127,6 @@ function listenServer() {
             document.getElementById("res").innerText = sum;
             document.getElementById("st").innerText = res.toUpperCase();
             if(user.toLowerCase() === "admin") document.getElementById("soi-kq").innerText = "";
-            
             if(side !== "") {
                 var cuoc = parseInt(document.getElementById("cuoc").value) || 0;
                 var money = parseInt(localStorage.getItem(user));
@@ -140,8 +136,8 @@ function listenServer() {
         }
     });
 
-    db.ref('buffs/' + user).on('value', function(snapshot) {
-        var data = snapshot.val();
+    db.ref('buffs/' + user).on('value', function(snap) {
+        var data = snap.val();
         if(data) {
             var money = parseInt(localStorage.getItem(user));
             localStorage.setItem(user, money + data.amount);
