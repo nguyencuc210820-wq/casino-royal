@@ -3,7 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <title>Casino Royal Pro - Nhà Cái Cầm Cái</title>
-    <!-- Nhúng thư viện Firebase chuẩn -->
     <script src="https://gstatic.com"></script>
     <script src="https://gstatic.com"></script>
     <style>
@@ -32,13 +31,11 @@
             <div id="bat" class="bowl"></div>
         </div>
         <h2 id="st">CHỜ NHÀ CÁI...</h2>
-
         <div id="user-panel">
             <button class="btn" style="background:red; color:white" onclick="dat('Tai')">TÀI</button>
             <button class="btn" style="background:blue; color:white" onclick="dat('Xiu')">XỈU</button>
             <br><input type="number" id="cuoc" placeholder="Số xu cược">
         </div>
-
         <div id="admin-panel">
             <p style="color:gold; font-weight:bold;">QUYỀN LỰC NHÀ CÁI</p>
             <div id="soi-kq"></div>
@@ -53,7 +50,6 @@
     </div>
 
 <script>
-// CONFIG ĐÃ CẬP NHẬT ĐÚNG DATABASE URL CỦA NÍ
 var firebaseConfig = {
   apiKey: "AIzaSyAPg1xGWBqvg7USMkZ8_TAJ3zvUVOffSIA",
   authDomain: "://firebaseapp.com",
@@ -70,14 +66,10 @@ function login() {
     user = document.getElementById("uname").value.trim();
     if(!user) { alert("Nhập tên đã ní!"); return; }
     if(!localStorage.getItem(user)) localStorage.setItem(user, 10000);
-    
     document.getElementById("login-box").style.display = "none";
     document.getElementById("game-box").style.display = "block";
     document.getElementById("n").innerText = user;
-    
-    if(user.toLowerCase() === "admin") {
-        document.getElementById("admin-panel").style.display = "block";
-    }
+    if(user.toLowerCase() === "admin") document.getElementById("admin-panel").style.display = "block";
     updateUI();
     listenServer();
 }
@@ -103,7 +95,7 @@ function buff() {
     var a = parseInt(document.getElementById("buff-amt").value);
     if(t && a) {
         db.ref('buffs/' + t).set({ amount: a, t: Date.now() });
-        alert("Đã gửi lệnh bơm " + a + " xu cho " + t);
+        alert("Đã gửi lệnh bơm tiền!");
     }
 }
 
