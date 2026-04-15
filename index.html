@@ -2,8 +2,8 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Casino Royal Pro</title>
-    <!-- Nhúng thư viện Firebase -->
+    <title>Casino Royal Pro - Nhà Cái Cầm Cái</title>
+    <!-- Nhúng thư viện chuẩn -->
     <script src="https://gstatic.com"></script>
     <script src="https://gstatic.com"></script>
     <style>
@@ -45,14 +45,14 @@
             <button class="btn" onclick="xoc()">🎲 XÓC ĐĨA</button>
             <button class="btn" style="background:lime" onclick="mo()">🔓 MỞ BÁT</button>
             <hr>
-            <input type="text" id="target" placeholder="Tên đệ">
+            <input type="text" id="target" placeholder="Tên người nhận">
             <input type="number" id="buff-amt" placeholder="Số xu">
             <button class="btn" style="background:white" onclick="buff()">BƠM TIỀN</button>
         </div>
     </div>
 
 <script>
-// CONFIG ĐÃ FIX ĐƯỜNG DẪN DATABASE CHO KHU VỰC ASIA
+// CONFIG ĐÃ FIX CHUẨN ĐƯỜNG DẪN DATABASE
 const firebaseConfig = {
   apiKey: "AIzaSyAPg1xGWBqvg7USMkZ8_TAJ3zvUVOffSIA",
   authDomain: "://firebaseapp.com",
@@ -61,7 +61,6 @@ const firebaseConfig = {
   appId: "1:670247607539:web:8201c606ff6d223d1b2b86"
 };
 
-// Khởi tạo
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 let user = "", side = "";
@@ -70,13 +69,14 @@ function login() {
     user = document.getElementById("uname").value.trim();
     if(!user) return alert("Nhập tên đã ní!");
     
-    // Lưu tiền máy cục bộ
+    // Lưu tiền máy cục bộ 10k xu
     if(!localStorage.getItem(user)) localStorage.setItem(user, 10000);
     
     document.getElementById("login-box").style.display = "none";
     document.getElementById("game-box").style.display = "block";
     document.getElementById("n").innerText = user;
     
+    // Kiểm tra quyền Admin
     if(user.toLowerCase() === "admin") {
         document.getElementById("admin-panel").style.display = "block";
     }
@@ -86,29 +86,31 @@ function login() {
 }
 
 function updateUI() { 
-    document.getElementById("m").innerText = parseInt(localStorage.getItem(user)).toLocaleString(); 
+    let money = localStorage.getItem(user) || 0;
+    document.getElementById("m").innerText = parseInt(money).toLocaleString(); 
 }
 
-function dat(s) { side = s; alert("Đã đặt: " + s); }
+function dat(s) { side = s; alert("Đã đặt: " + s.toUpperCase()); }
 
 function xoc() {
-    const d = [Math.floor(Math.random()*6)+1, Math.floor(Math.random()*6)+1, Math.floor(Math.random()*6)+1];
-    db.ref('shaking').set({ st: "xoc", d: d });
+    const d1 = Math.floor(Math.random()*6)+1;
+    const d2 = Math.floor(Math.random()*6)+1;
+    const d3 = Math.floor(Math.random()*6)+1;
+    db.ref('shaking').set({ st: "xoc", d: [d1, d2, d3] });
 }
 
 function mo() { db.ref('shaking/st').set("mo"); }
 
 function buff() {
-    let t = document.getElementById("target").value;
-    let a = document.getElementById("buff-amt").value;
+    let t = document.getElementById("target").value.trim();
+    let a = parseInt(document.getElementById("buff-amt").value);
     if(t && a) {
-        db.ref('buffs/' + t).set({ amount: parseInt(a), t: Date.now() });
-        alert("Đã bơm tiền!");
+        db.ref('buffs/' + t).set({ amount: a, t: Date.now() });
+        alert("Đã bơm tiền cho " + t);
     }
 }
 
 function listenServer() {
-    // Nghe kết quả game
     db.ref('shaking').on('value', (s) => {
         const data = s.val(); if(!data) return;
         const b = document.getElementById("bat");
@@ -116,6 +118,7 @@ function listenServer() {
             b.classList.remove("open");
             document.getElementById("st").innerText = "ĐANG XÓC ĐĨA...";
             document.getElementById("res").innerText = "?";
+            // CHỈ ADMIN MỚI THẤY SOI KẾT QUẢ
             if(user.toLowerCase() === "admin") {
                 let sum = data.d[0] + data.d[1] + data.d[2];
                 let kq = sum >= 11 ? "TÀI" : "XỈU";
@@ -138,7 +141,6 @@ function listenServer() {
         }
     });
 
-    // Nghe lệnh buff tiền
     db.ref('buffs/' + user).on('value', (s) => {
         let data = s.val();
         if(data) {
