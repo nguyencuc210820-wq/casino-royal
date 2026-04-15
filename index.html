@@ -1,59 +1,74 @@
 <!DOCTYPE html>
-<html>
+<html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Casino Royal Pro</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Casino Royal Pro - Nhà Cái Cầm Cái</title>
+    <!-- Nhúng Firebase chuẩn -->
     <script src="https://gstatic.com"></script>
     <script src="https://gstatic.com"></script>
     <style>
-        body { background: #0a3d1d; color: white; text-align: center; font-family: sans-serif; padding: 20px; }
-        .plate { width: 150px; height: 150px; background: #eee; border-radius: 50%; margin: 20px auto; position: relative; display: flex; justify-content: center; align-items: center; border: 5px solid #777; }
-        .bowl { width: 160px; height: 160px; background: radial-gradient(circle, #f1c40f, #d35400); border-radius: 50%; position: absolute; transition: 0.5s; z-index: 10; }
-        .bowl.open { transform: translateY(-120px) rotate(20deg); opacity: 0.8; }
-        .dice { color: black; font-size: 25px; font-weight: bold; }
-        .btn { padding: 12px 20px; margin: 5px; cursor: pointer; font-weight: bold; border-radius: 20px; border: none; background: gold; }
-        input { padding: 10px; border-radius: 15px; border: none; margin: 5px; text-align: center; }
-        #admin-panel { background: rgba(255, 255, 255, 0.1); padding: 15px; border-radius: 15px; margin-top: 20px; border: 2px dashed gold; display: none; }
-        #soi-kq { color: #00ff00; font-size: 1.5rem; font-weight: bold; min-height: 30px; margin: 10px; }
+        :root { --gold: #f1c40f; --red: #e74c3c; --blue: #3498db; }
+        body { background: #0a3d1d; color: white; text-align: center; font-family: 'Segoe UI', sans-serif; padding: 20px; margin: 0; }
+        .header { background: rgba(0,0,0,0.5); padding: 15px; border-radius: 15px; border: 1px solid var(--gold); margin-bottom: 20px; display: inline-block; min-width: 250px; }
+        .plate { width: 160px; height: 160px; background: #eee; border-radius: 50%; margin: 20px auto; position: relative; display: flex; justify-content: center; align-items: center; border: 8px solid #777; box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
+        .bowl { width: 170px; height: 170px; background: radial-gradient(circle, #f1c40f, #d35400); border-radius: 50%; position: absolute; transition: 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 10; border: 2px solid orange; }
+        .bowl.open { transform: translateY(-150px) rotate(30deg); opacity: 0.9; }
+        .dice { color: #333; font-size: 28px; font-weight: bold; }
+        .shake-anim { animation: shake 0.1s infinite; }
+        @keyframes shake { 0% { transform: rotate(3deg); } 50% { transform: rotate(-3deg); } 100% { transform: rotate(3deg); } }
+        .btn { padding: 12px 25px; margin: 5px; cursor: pointer; font-weight: bold; border-radius: 25px; border: none; background: var(--gold); color: black; transition: 0.2s; }
+        .btn:active { transform: scale(0.9); }
+        input { padding: 12px; border-radius: 20px; border: none; margin: 5px; text-align: center; width: 80%; max-width: 200px; }
+        #admin-panel { background: rgba(255, 255, 255, 0.1); padding: 20px; border-radius: 20px; margin-top: 30px; border: 2px dashed var(--gold); }
+        #soi-kq { color: #00ff00; font-size: 1.6rem; font-weight: bold; min-height: 40px; margin-bottom: 10px; text-shadow: 0 0 10px #00ff00; }
     </style>
 </head>
 <body>
-    <div id="login-box">
-        <h1>🎰 CASINO ROYAL</h1>
-        <input type="text" id="uname" placeholder="Nhập tên ní..."><br>
-        <button class="btn" onclick="login()">VÀO SÒNG</button>
+
+<div id="login-box">
+    <h1>🎰 CASINO ROYAL</h1>
+    <input type="text" id="uname" placeholder="Nhập tên ní..."><br><br>
+    <button class="btn" onclick="login()">VÀO SÒNG</button>
+</div>
+
+<div id="game-box" style="display:none;">
+    <div class="header">
+        👤 <span id="n"></span> | 💰 <b id="m" style="color:var(--gold)">0</b> xu
     </div>
 
-    <div id="game-box" style="display:none;">
-        <p>👤 <span id="n"></span> | 💰 <b id="m">0</b> xu</p>
-        <div class="plate">
-            <div id="res" class="dice">?</div>
-            <div id="bat" class="bowl"></div>
-        </div>
-        <h2 id="st">CHỜ NHÀ CÁI...</h2>
-        <div id="user-panel">
-            <button class="btn" style="background:red; color:white" onclick="dat('Tai')">TÀI</button>
-            <button class="btn" style="background:blue; color:white" onclick="dat('Xiu')">XỈU</button>
-            <br><input type="number" id="cuoc" placeholder="Số xu cược">
-        </div>
-        <div id="admin-panel">
-            <p style="color:gold; font-weight:bold;">NHÀ CÁI QUYỀN LỰC</p>
-            <div id="soi-kq"></div>
-            <button class="btn" onclick="xoc()">🎲 XÓC ĐĨA</button>
-            <button class="btn" style="background:lime" onclick="mo()">🔓 MỞ BÁT</button>
-            <hr>
-            <input type="text" id="target" placeholder="Tên đệ nhận">
-            <input type="number" id="buff-amt" placeholder="Số xu">
-            <button class="btn" style="background:white" onclick="buff()">BƠM TIỀN</button>
-        </div>
+    <div class="plate">
+        <div id="res" class="dice">?</div>
+        <div id="bat" class="bowl"></div>
     </div>
+
+    <h2 id="st" style="color:var(--gold)">CHỜ NHÀ CÁI...</h2>
+
+    <div id="user-panel">
+        <button class="btn" style="background:var(--red); color:white" onclick="dat('Tai')">TÀI</button>
+        <button class="btn" style="background:var(--blue); color:white" onclick="dat('Xiu')">XỈU</button>
+        <br><br>
+        <input type="number" id="cuoc" placeholder="Nhập số xu cược">
+    </div>
+
+    <div id="admin-panel" style="display:none;">
+        <p style="color:var(--gold); font-weight:bold; letter-spacing: 2px;">QUYỀN LỰC NHÀ CÁI</p>
+        <div id="soi-kq"></div>
+        <button class="btn" onclick="xoc()">🎲 XÓC ĐĨA</button>
+        <button class="btn" style="background:#2ecc71" onclick="mo()">🔓 MỞ BÁT</button>
+        <hr style="border: 0.5px solid #555; margin: 20px 0;">
+        <input type="text" id="target" placeholder="Tên đệ nhận">
+        <input type="number" id="buff-amt" placeholder="Số xu">
+        <button class="btn" style="background:white" onclick="buff()">BƠM TIỀN</button>
+    </div>
+</div>
 
 <script>
-// TỚ ĐÃ SỬA LẠI ĐÚNG LINK DATABASE CỦA NÍ ĐÂY RỒI!
+// CONFIG ĐÃ FIX CHUẨN DATABASE VÀ API
 var firebaseConfig = {
   apiKey: "AIzaSyAPg1xGWBqvg7USMkZ8_TAJ3zvUVOffSIA",
-  authDomain: "casinobanbe.firebaseapp.com",
-  databaseURL: "https://casinobanbe-default-rtdb.asia-southeast1.firebasedatabase.app", 
+  authDomain: "://firebaseapp.com",
+  databaseURL: "https://firebasedatabase.app", 
   projectId: "casinobanbe",
   appId: "1:670247607539:web:8201c606ff6d223d1b2b86"
 };
@@ -64,7 +79,7 @@ var user = "", side = "";
 
 function login() {
     user = document.getElementById("uname").value.trim();
-    if(!user) return;
+    if(!user) return alert("Nhập tên ní ơi!");
     if(!localStorage.getItem(user)) localStorage.setItem(user, 10000);
     document.getElementById("login-box").style.display = "none";
     document.getElementById("game-box").style.display = "block";
@@ -79,7 +94,7 @@ function updateUI() {
     document.getElementById("m").innerText = parseInt(money).toLocaleString(); 
 }
 
-function dat(s) { side = s; alert("Đã đặt: " + s); }
+function dat(s) { side = s; alert("Đã chốt: " + s.toUpperCase()); }
 
 function xoc() {
     var d1 = Math.floor(Math.random()*6)+1;
@@ -95,27 +110,28 @@ function buff() {
     var a = parseInt(document.getElementById("buff-amt").value);
     if(t && a) {
         db.ref('buffs/' + t).set({ amount: a, t: Date.now() });
-        alert("Đã gửi lệnh bơm tiền!");
+        alert("Đã bơm " + a + " xu cho " + t);
     }
 }
 
 function listenServer() {
     db.ref('shaking').on('value', function(snap) {
-        var data = snap.val(); if(!data) return;
+        var data = snap.val(); if(!data || !data.d) return;
         var b = document.getElementById("bat");
+        var sum = data.d[0] + data.d[1] + data.d[2];
+        var res = sum >= 11 ? "Tai" : "Xiu";
+
         if(data.st === "xoc") {
             b.classList.remove("open");
+            b.classList.add("shake-anim");
             document.getElementById("st").innerText = "ĐANG XÓC ĐĨA...";
             document.getElementById("res").innerText = "?";
             if(user.toLowerCase() === "admin") {
-                var sum = data.d[0] + data.d[1] + data.d[2];
-                var kq = sum >= 11 ? "TÀI" : "XỈU";
-                document.getElementById("soi-kq").innerText = "SOI: " + kq + " (" + sum + ")";
+                document.getElementById("soi-kq").innerText = "SOI: " + res.toUpperCase() + " (" + sum + ")";
             }
         } else {
+            b.classList.remove("shake-anim");
             b.classList.add("open");
-            var sum = data.d[0] + data.d[1] + data.d[2];
-            var res = sum >= 11 ? "Tai" : "Xiu";
             document.getElementById("res").innerText = sum;
             document.getElementById("st").innerText = res.toUpperCase();
             if(user.toLowerCase() === "admin") document.getElementById("soi-kq").innerText = "";
@@ -135,7 +151,7 @@ function listenServer() {
             localStorage.setItem(user, money + data.amount);
             updateUI();
             db.ref('buffs/' + user).remove();
-            alert("ADMIN VỪA BƠM TIỀN!");
+            alert("ADMIN VỪA BƠM TIỀN CHO NÍ!");
         }
     });
 }
