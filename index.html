@@ -2,56 +2,149 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Casino Royal</title>
+    <title>Casino Royal Pro - Nhà Cái Cầm Cái</title>
+    <script src="https://gstatic.com"></script>
+    <script src="https://gstatic.com"></script>
     <style>
-        body { background: #0a3d1d; color: white; text-align: center; font-family: sans-serif; padding-top: 50px; }
+        body { background: #0a3d1d; color: white; text-align: center; font-family: sans-serif; padding: 20px; }
         .plate { width: 150px; height: 150px; background: #eee; border-radius: 50%; margin: 20px auto; position: relative; display: flex; justify-content: center; align-items: center; border: 5px solid #777; }
-        .bowl { width: 160px; height: 160px; background: orange; border-radius: 50%; position: absolute; transition: 0.5s; cursor: pointer; }
-        .bowl.open { transform: translateY(-100px); opacity: 0.7; }
-        .dice { color: black; font-size: 20px; font-weight: bold; margin: 5px; }
-        button { padding: 10px 20px; margin: 10px; cursor: pointer; font-weight: bold; border-radius: 10px; border: none; }
+        .bowl { width: 160px; height: 160px; background: radial-gradient(circle, #f1c40f, #d35400); border-radius: 50%; position: absolute; transition: 0.5s; z-index: 10; }
+        .bowl.open { transform: translateY(-100px) rotate(20deg); opacity: 0.8; }
+        .dice { color: black; font-size: 25px; font-weight: bold; }
+        .btn { padding: 10px 20px; margin: 5px; cursor: pointer; font-weight: bold; border-radius: 10px; border: none; background: gold; }
+        input { padding: 10px; border-radius: 10px; border: none; margin: 5px; text-align: center; }
+        #admin-panel { background: rgba(255,0,0,0.2); padding: 15px; border-radius: 15px; margin-top: 20px; border: 1px dashed gold; }
     </style>
 </head>
 <body>
     <div id="login-box">
         <h1>🎰 CASINO ROYAL</h1>
-        <input type="text" id="uname" placeholder="Nhập tên..." style="padding:10px; border-radius:10px;"><br><br>
-        <button onclick="vaoSong()" style="background:gold;">VÀO SÒNG</button>
+        <input type="text" id="uname" placeholder="Nhập tên ní..."><br>
+        <button class="btn" onclick="login()">VÀO SÒNG</button>
     </div>
 
     <div id="game-box" style="display:none;">
-        <p>Chào ní: <b id="display-name"></b> | Tiền: <b id="money">0</b> xu</p>
+        <p>👤 <span id="n"></span> | 💰 <span id="m">0</span> xu</p>
         <div class="plate">
-            <div class="dice" id="res">?</div>
+            <div id="res" class="dice">?</div>
             <div id="bat" class="bowl"></div>
         </div>
-        <button onclick="xoc()" style="background:white;">🎲 XÓC ĐĨA</button>
-        <button onclick="moBat()" style="background:lime;">🔓 MỞ BÁT</button>
+        <h2 id="st">CHỜ NHÀ CÁI...</h2>
+
+        <!-- Khu vực cho người chơi -->
+        <div id="user-panel">
+            <button class="btn" style="background:red; color:white" onclick="dat('Tai')">TÀI</button>
+            <button class="btn" style="background:blue; color:white" onclick="dat('Xiu')">XỈU</button>
+            <br><input type="number" id="cuoc" placeholder="Số xu cược">
+        </div>
+
+        <!-- Khu vực quyền lực của ADMIN -->
+        <div id="admin-panel" style="display:none;">
+            <p style="color:yellow; font-weight:bold;">MÀN HÌNH NHÀ CÁI</p>
+            <p id="soi" style="color:lime; font-size:1.2rem;">SOI TRƯỚC: ---</p>
+            <button class="btn" onclick="xoc()">🎲 XÓC ĐĨA</button>
+            <button class="btn" style="background:lime" onclick="mo()">🔓 MỞ BÁT</button>
+            <hr>
+            <input type="text" id="target" placeholder="Tên người nhận">
+            <input type="number" id="buff-amt" placeholder="Số xu">
+            <button class="btn" onclick="buff()">BƠM TIỀN</button>
+        </div>
     </div>
 
-    <script>
-        function vaoSong() {
-            var name = document.getElementById('uname').value;
-            if (name == "") { alert("Nhập tên đã ní!"); return; }
-            
-            document.getElementById('login-box').style.display = 'none';
-            document.getElementById('game-box').style.display = 'block';
-            document.getElementById('display-name').innerText = name;
-            
-            if (!localStorage.getItem(name)) { localStorage.setItem(name, 10000); }
-            document.getElementById('money').innerText = localStorage.getItem(name);
-        }
+<script>
+// Dán Config Firebase của ní vào đây
+const firebaseConfig = {
+  apiKey: "AIzaSyAPg1xGWBqvg7USMkZ8_TAJ3zvUVOffSIA",
+  authDomain: "://firebaseapp.com",
+  databaseURL: "https://firebasedatabase.app",
+  projectId: "casinobanbe",
+  appId: "1:670247607539:web:8201c606ff6d223d1b2b86"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+let user = "", side = "";
 
-        function xoc() {
-            document.getElementById('bat').classList.remove('open');
-            document.getElementById('res').innerText = "Đang xóc...";
-        }
+function login() {
+    user = document.getElementById("uname").value.trim();
+    if(!user) return;
+    if(!localStorage.getItem(user)) localStorage.setItem(user, 10000);
+    document.getElementById("login-box").style.display = "none";
+    document.getElementById("game-box").style.display = "block";
+    document.getElementById("n").innerText = user;
+    
+    if(user.toLowerCase() === "admin") {
+        document.getElementById("admin-panel").style.display = "block";
+    }
+    updateUI();
+    listen();
+}
 
-        function moBat() {
-            document.getElementById('bat').classList.add('open');
-            var num = Math.floor(Math.random() * 18) + 3; // Random từ 3 đến 18
-            document.getElementById('res').innerText = num;
+function updateUI() { 
+    document.getElementById("m").innerText = parseInt(localStorage.getItem(user)).toLocaleString(); 
+}
+
+function dat(s) { side = s; alert("Đã đặt: " + s); }
+
+// ADMIN XÓC
+function xoc() {
+    const d = [Math.floor(Math.random()*6)+1, Math.floor(Math.random()*6)+1, Math.floor(Math.random()*6)+1];
+    db.ref('game').set({ st: "xoc", d: d });
+}
+
+// ADMIN MỞ
+function mo() { db.ref('game/st').set("mo"); }
+
+// ADMIN BUFF TIỀN
+function buff() {
+    let t = document.getElementById("target").value;
+    let a = document.getElementById("buff-amt").value;
+    if(t && a) {
+        db.ref('buffs/' + t).set(parseInt(a));
+        alert("Đã bơm " + a + " xu cho " + t);
+    }
+}
+
+function listen() {
+    // Nghe lệnh game
+    db.ref('game').on('value', (s) => {
+        const data = s.val(); if(!data) return;
+        const b = document.getElementById("bat");
+        if(data.st === "xoc") {
+            b.classList.remove("open");
+            document.getElementById("st").innerText = "ĐANG XÓC ĐĨA...";
+            document.getElementById("res").innerText = "?";
+            if(user.toLowerCase() === "admin") {
+                let sum = data.d[0] + data.d[1] + data.d[2];
+                let kq = sum >= 11 ? "TÀI" : "XỈU";
+                document.getElementById("soi").innerText = "SOI TRƯỚC: " + kq + " (" + sum + ")";
+            }
+        } else {
+            b.classList.add("open");
+            let sum = data.d[0] + data.d[1] + data.d[2];
+            let res = sum >= 11 ? "Tai" : "Xiu";
+            document.getElementById("res").innerText = sum;
+            document.getElementById("st").innerText = res.toUpperCase();
+            
+            if(side !== "") {
+                let cuoc = parseInt(document.getElementById("cuoc").value) || 0;
+                let money = parseInt(localStorage.getItem(user));
+                localStorage.setItem(user, side === res ? money + cuoc : money - cuoc);
+                side = ""; updateUI();
+            }
         }
-    </script>
+    });
+
+    // Nghe lệnh buff tiền từ Admin
+    db.ref('buffs/' + user).on('value', (s) => {
+        if(s.val()) {
+            let money = parseInt(localStorage.getItem(user));
+            localStorage.setItem(user, money + s.val());
+            updateUI();
+            db.ref('buffs/' + user).remove();
+            alert("Ní vừa được Admin bơm tiền!");
+        }
+    });
+}
+</script>
 </body>
 </html>
