@@ -2,8 +2,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Casino Royal Pro - Nhà Cái Cầm Cái</title>
-    <!-- Nhúng Firebase chuẩn -->
+    <title>Casino Royal Pro</title>
     <script src="https://gstatic.com"></script>
     <script src="https://gstatic.com"></script>
     <style>
@@ -38,23 +37,22 @@
             <br><input type="number" id="cuoc" placeholder="Số xu cược">
         </div>
         <div id="admin-panel">
-            <p style="color:gold; font-weight:bold;">QUYỀN LỰC NHÀ CÁI</p>
+            <p style="color:gold; font-weight:bold;">NHÀ CÁI QUYỀN LỰC</p>
             <div id="soi-kq"></div>
             <button class="btn" onclick="xoc()">🎲 XÓC ĐĨA</button>
             <button class="btn" style="background:lime" onclick="mo()">🔓 MỞ BÁT</button>
             <hr>
-            <p>BƠM TIỀN CHO ĐỆ</p>
             <input type="text" id="target" placeholder="Tên đệ nhận">
             <input type="number" id="buff-amt" placeholder="Số xu">
-            <button class="btn" style="background:white" onclick="buff()">XÁC NHẬN BƠM</button>
+            <button class="btn" style="background:white" onclick="buff()">BƠM TIỀN</button>
         </div>
     </div>
 
 <script>
-// CONFIG ĐÃ FIX CHUẨN DATABASE ASIA-SOUTHEAST1
+// TỚ ĐÃ SỬA LẠI ĐÚNG LINK DATABASE CỦA NÍ ĐÂY RỒI!
 var firebaseConfig = {
   apiKey: "AIzaSyAPg1xGWBqvg7USMkZ8_TAJ3zvUVOffSIA",
-  authDomain: "://firebaseapp.com",
+  authDomain: "casinobanbe.firebaseapp.com",
   databaseURL: "https://casinobanbe-default-rtdb.asia-southeast1.firebasedatabase.app", 
   projectId: "casinobanbe",
   appId: "1:670247607539:web:8201c606ff6d223d1b2b86"
@@ -66,7 +64,7 @@ var user = "", side = "";
 
 function login() {
     user = document.getElementById("uname").value.trim();
-    if(!user) { alert("Nhập tên đã ní!"); return; }
+    if(!user) return;
     if(!localStorage.getItem(user)) localStorage.setItem(user, 10000);
     document.getElementById("login-box").style.display = "none";
     document.getElementById("game-box").style.display = "block";
@@ -81,7 +79,7 @@ function updateUI() {
     document.getElementById("m").innerText = parseInt(money).toLocaleString(); 
 }
 
-function dat(s) { side = s; alert("Đã chốt: " + s.toUpperCase()); }
+function dat(s) { side = s; alert("Đã đặt: " + s); }
 
 function xoc() {
     var d1 = Math.floor(Math.random()*6)+1;
@@ -137,7 +135,7 @@ function listenServer() {
             localStorage.setItem(user, money + data.amount);
             updateUI();
             db.ref('buffs/' + user).remove();
-            alert("ADMIN VỪA BƠM TIỀN CHO NÍ!");
+            alert("ADMIN VỪA BƠM TIỀN!");
         }
     });
 }
