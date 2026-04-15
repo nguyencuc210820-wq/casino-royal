@@ -2,120 +2,135 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Casino Royal Pro</title>
-    <script src="https://gstatic.com"></script>
-    <script src="https://gstatic.com"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Casino Royal - Bản Chơi Offline</title>
     <style>
-        body { background: #0a3d1d; color: white; font-family: sans-serif; text-align: center; padding-top: 50px; }
-        .plate { width: 160px; height: 160px; background: #eee; border-radius: 50%; margin: 20px auto; position: relative; display: flex; justify-content: center; align-items: center; gap: 10px; border: 5px solid #555; }
-        .dice { width: 35px; height: 35px; background: white; color: black; border-radius: 5px; line-height: 35px; font-weight: bold; font-size: 20px; }
-        .bowl { width: 170px; height: 170px; background: radial-gradient(circle, #f1c40f, #d35400); border-radius: 50%; position: absolute; z-index: 10; transition: 0.5s; border: 2px solid orange; }
-        .bowl.open { transform: translateY(-120px) rotate(20deg); opacity: 0.8; }
-        .shake { animation: shake 0.1s infinite; }
-        @keyframes shake { 0% { transform: rotate(3deg); } 50% { transform: rotate(-3deg); } }
-        .btn { background: #f1c40f; padding: 12px 25px; border-radius: 25px; cursor: pointer; color: black; font-weight: bold; border: none; margin: 10px; }
-        input { padding: 10px; border-radius: 20px; border: none; text-align: center; }
+        :root { --gold: #f1c40f; --red: #e74c3c; --blue: #3498db; }
+        body { background: #0a3d1d; color: white; font-family: 'Segoe UI', sans-serif; text-align: center; padding-top: 50px; margin: 0; }
+        .app-container { max-width: 450px; margin: auto; padding: 20px; }
+        .plate { width: 180px; height: 180px; background: #eee; border-radius: 50%; margin: 20px auto; position: relative; display: flex; justify-content: center; align-items: center; gap: 10px; border: 8px solid #777; box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
+        .dice { width: 40px; height: 40px; background: white; color: #333; border-radius: 8px; line-height: 40px; font-weight: bold; font-size: 22px; }
+        .bowl { width: 190px; height: 190px; background: radial-gradient(circle, #f1c40f, #d35400); border-radius: 50%; position: absolute; z-index: 10; transition: 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); border: 2px solid #e67e22; }
+        .bowl.open { transform: translateY(-150px) rotate(30deg); opacity: 0.9; }
+        .shake-anim { animation: shake 0.1s infinite; }
+        @keyframes shake { 0% { transform: translate(2px, 1px) rotate(0deg); } 50% { transform: translate(-2px, -1px) rotate(-1deg); } 100% { transform: translate(2px, 1px) rotate(0deg); } }
+        .btn { background: var(--gold); padding: 15px 30px; border-radius: 30px; cursor: pointer; color: black; font-weight: bold; border: none; margin: 10px; font-size: 1rem; transition: 0.2s; }
+        .btn:active { transform: scale(0.95); }
+        input { padding: 12px; border-radius: 25px; border: none; text-align: center; width: 80%; margin-bottom: 10px; font-size: 1rem; }
+        .status-txt { color: var(--gold); font-size: 1.5rem; min-height: 40px; }
     </style>
 </head>
 <body>
-    <div id="login-box">
-        <h1>🎰 CASINO ROYAL</h1>
-        <input type="text" id="uname" placeholder="Nhập tên ní..."><br><br>
-        <button class="btn" onclick="login()">VÀO SÒNG</button>
+
+<div id="login-screen">
+    <h1>🎰 CASINO ROYAL</h1>
+    <p>Bản chơi thử không cần mạng</p>
+    <input type="text" id="username" placeholder="Nhập tên nhân vật..."><br>
+    <button class="btn" onclick="login()">VÀO SÒNG</button>
+</div>
+
+<div id="game-screen" style="display:none" class="app-container">
+    <div style="background: rgba(0,0,0,0.5); padding: 15px; border-radius: 15px; border: 1px solid var(--gold);">
+        👤 <span id="u-name">...</span> | 💰 <span id="u-balance">0</span> xu
     </div>
 
-    <div id="game-box" style="display:none">
-        <p>👤 <span id="display-name"></span> | 💰 <span id="balance">0</span> xu</p>
-        <div class="plate">
-            <div class="dice" id="d1">?</div><div class="dice" id="d2">?</div><div class="dice" id="d3">?</div>
-            <div id="bowl" class="bowl"></div>
-        </div>
-        <h2 id="status">CHỜ NHÀ CÁI...</h2>
-        <button class="btn" style="background:#e74c3c" onclick="choose('Tai')">TÀI</button>
-        <button class="btn" style="background:#3498db" onclick="choose('Xiu')">XỈU</button>
-        <br><br>
-        <input type="number" id="bet-amt" placeholder="Số xu cược">
-        
-        <div id="admin-tools" style="display:none; margin-top: 30px; border-top: 2px dashed gold; padding-top: 20px;">
-            <p style="color:yellow">CÔNG CỤ NHÀ CÁI</p>
-            <button class="btn" onclick="handleXoc()">🎲 XÓC ĐĨA</button>
-            <button class="btn" style="background:#2ecc71" onclick="handleMo()">🔓 MỞ BÁT</button>
-        </div>
+    <div class="plate">
+        <div class="dice" id="d1">?</div>
+        <div class="dice" id="d2">?</div>
+        <div class="dice" id="d3">?</div>
+        <div id="bowl" class="bowl"></div>
     </div>
+
+    <div id="status" class="status-txt">CHỜ NHÀ CÁI XÓC...</div>
+
+    <div style="margin: 20px 0;">
+        <button class="btn" style="background:var(--red); color:white" onclick="pick('Tai')">TÀI</button>
+        <button class="btn" style="background:var(--blue); color:white" onclick="pick('Xiu')">XỈU</button>
+    </div>
+
+    <input type="number" id="bet-amount" placeholder="Nhập số xu cược...">
+    
+    <div style="margin-top: 20px; border-top: 2px dashed var(--gold); padding-top: 20px;">
+        <button class="btn" onclick="shakeGame()">🎲 XÓC ĐĨA</button>
+        <button class="btn" style="background:#2ecc71" onclick="openBowl()">🔓 MỞ BÁT</button>
+    </div>
+</div>
 
 <script>
-const firebaseConfig = {
-  apiKey: "AIzaSyAPg1xGWBqvg7USMkZ8_TAJ3zvUVOffSIA",
-  authDomain: "://firebaseapp.com",
-  databaseURL: "https://firebasedatabase.app",
-  projectId: "casinobanbe",
-  appId: "1:670247607539:web:8201c606ff6d223d1b2b86"
-};
-firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
-let myUser = "", myChoice = "";
+    let player = "";
+    let selectedSide = "";
+    let currentDice = [1, 1, 1];
 
-function login() {
-    myUser = document.getElementById("uname").value.trim();
-    if(!myUser) return alert("Nhập tên mới vào được ní!");
-    if(!localStorage.getItem(myUser)) localStorage.setItem(myUser, 10000);
-    document.getElementById("login-box").style.display = "none";
-    document.getElementById("game-box").style.display = "block";
-    document.getElementById("display-name").innerText = myUser;
-    if(myUser.toLowerCase() === "admin") document.getElementById("admin-tools").style.display = "block";
-    renderUI();
-    listenServer();
-}
-
-function renderUI() { 
-    let money = localStorage.getItem(myUser) || 0;
-    document.getElementById("balance").innerText = parseInt(money).toLocaleString(); 
-}
-
-function choose(s) { myChoice = s; alert("Ní đã đặt: " + s.toUpperCase()); }
-
-function handleXoc() {
-    const res = [Math.floor(Math.random()*6)+1, Math.floor(Math.random()*6)+1, Math.floor(Math.random()*6)+1];
-    db.ref('shaking').set({ state: "on", dice: res });
-}
-
-function handleMo() { db.ref('shaking/state').set("off"); }
-
-function listenServer() {
-    db.ref('shaking').on('value', (snapshot) => {
-        const data = snapshot.val(); 
-        if(!data) return;
-        const bowlEl = document.getElementById("bowl");
+    function login() {
+        player = document.getElementById("username").value.trim();
+        if(!player) return alert("Phải có tên mới vào sòng được ní!");
         
-        if(data.state === "on") {
-            bowlEl.classList.add("shake"); 
-            bowlEl.classList.remove("open");
-            document.getElementById("status").innerText = "ĐANG XÓC ĐĨA...";
-        } else {
-            bowlEl.classList.remove("shake"); 
-            bowlEl.classList.add("open");
-            document.getElementById("d1").innerText = data.dice[0];
-            document.getElementById("d2").innerText = data.dice[1];
-            document.getElementById("d3").innerText = data.dice[2];
-            let total = data.dice[0] + data.dice[1] + data.dice[2];
-            let result = total >= 11 ? "Tai" : "Xiu";
-            document.getElementById("status").innerText = total + " - " + result.toUpperCase();
+        // Khởi tạo tiền 10k
+        if(!localStorage.getItem(player)) localStorage.setItem(player, 10000);
+        
+        document.getElementById("login-screen").style.display = "none";
+        document.getElementById("game-screen").style.display = "block";
+        document.getElementById("u-name").innerText = player;
+        updateUI();
+    }
+
+    function updateUI() {
+        let m = localStorage.getItem(player) || 0;
+        document.getElementById("u-balance").innerText = parseInt(m).toLocaleString();
+    }
+
+    function pick(side) {
+        selectedSide = side;
+        alert("Ní đã đặt cược vào: " + (side === 'Tai' ? "TÀI" : "XỈU"));
+    }
+
+    function shakeGame() {
+        const bowl = document.getElementById("bowl");
+        bowl.classList.remove("open");
+        bowl.classList.add("shake-anim");
+        document.getElementById("status").innerText = "ĐANG XÓC...";
+        
+        // Tạo kết quả ngẫu nhiên
+        currentDice = [
+            Math.floor(Math.random() * 6) + 1,
+            Math.floor(Math.random() * 6) + 1,
+            Math.floor(Math.random() * 6) + 1
+        ];
+    }
+
+    function openBowl() {
+        const bowl = document.getElementById("bowl");
+        if(!bowl.classList.contains("shake-anim")) return alert("Phải xóc trước khi mở chứ ní!");
+        
+        bowl.classList.remove("shake-anim");
+        bowl.classList.add("open");
+
+        // Hiển thị xúc xắc
+        document.getElementById("d1").innerText = currentDice[0];
+        document.getElementById("d2").innerText = currentDice[1];
+        document.getElementById("d3").innerText = currentDice[2];
+
+        // Tính kết quả
+        let sum = currentDice[0] + currentDice[1] + currentDice[2];
+        let result = (sum >= 11) ? "Tai" : "Xiu";
+        document.getElementById("status").innerText = sum + " - " + result.toUpperCase();
+
+        // Xử lý tiền
+        if(selectedSide !== "") {
+            let bet = parseInt(document.getElementById("bet-amount").value) || 0;
+            let money = parseInt(localStorage.getItem(player));
             
-            if(myChoice !== "") {
-                let bet = parseInt(document.getElementById("bet-amt").value) || 0;
-                let current = parseInt(localStorage.getItem(myUser));
-                if(myChoice === result) {
-                    localStorage.setItem(myUser, current + bet);
-                    alert("LỤM LÚA! +" + bet);
-                } else {
-                    localStorage.setItem(myUser, current - bet);
-                    alert("XUI QUÁ, MẤT " + bet);
-                }
-                myChoice = ""; renderUI();
+            if(selectedSide === result) {
+                localStorage.setItem(player, money + bet);
+                alert("Ngon! Ăn được " + bet + " xu.");
+            } else {
+                localStorage.setItem(player, money - bet);
+                alert("Xui quá! Mất " + bet + " xu rồi.");
             }
+            selectedSide = ""; // Reset đặt cược
+            updateUI();
         }
-    });
-}
+    }
 </script>
 </body>
 </html>
