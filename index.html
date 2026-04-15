@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html>
+<html lang="vi">
 <head>
     <meta charset="UTF-8">
     <title>Casino Royal Pro - Nhà Cái Cầm Cái</title>
-    <!-- Nhúng thư viện chuẩn -->
+    <!-- Nhúng đúng bộ thư viện chuẩn của Google -->
     <script src="https://gstatic.com"></script>
     <script src="https://gstatic.com"></script>
     <style>
@@ -14,7 +14,7 @@
         .dice { color: black; font-size: 25px; font-weight: bold; }
         .btn { padding: 12px 20px; margin: 5px; cursor: pointer; font-weight: bold; border-radius: 20px; border: none; background: gold; }
         input { padding: 10px; border-radius: 15px; border: none; margin: 5px; text-align: center; }
-        #admin-panel { background: rgba(255, 255, 255, 0.1); padding: 15px; border-radius: 15px; margin-top: 20px; border: 2px dashed gold; }
+        #admin-panel { background: rgba(255, 255, 255, 0.1); padding: 15px; border-radius: 15px; margin-top: 20px; border: 2px dashed gold; display: none; }
         #soi-kq { color: #00ff00; font-size: 1.5rem; font-weight: bold; min-height: 30px; margin: 10px; }
     </style>
 </head>
@@ -39,20 +39,20 @@
             <br><input type="number" id="cuoc" placeholder="Số xu cược">
         </div>
 
-        <div id="admin-panel" style="display:none;">
+        <div id="admin-panel">
             <p style="color:gold;">MÀN HÌNH NHÀ CÁI</p>
             <div id="soi-kq"></div>
             <button class="btn" onclick="xoc()">🎲 XÓC ĐĨA</button>
             <button class="btn" style="background:lime" onclick="mo()">🔓 MỞ BÁT</button>
             <hr>
-            <input type="text" id="target" placeholder="Tên người nhận">
+            <input type="text" id="target" placeholder="Tên đệ nhận">
             <input type="number" id="buff-amt" placeholder="Số xu">
             <button class="btn" style="background:white" onclick="buff()">BƠM TIỀN</button>
         </div>
     </div>
 
 <script>
-// CONFIG ĐÃ FIX CHUẨN ĐƯỜNG DẪN DATABASE
+// Dán đúng thông tin của ní vào đây
 const firebaseConfig = {
   apiKey: "AIzaSyAPg1xGWBqvg7USMkZ8_TAJ3zvUVOffSIA",
   authDomain: "://firebaseapp.com",
@@ -61,22 +61,21 @@ const firebaseConfig = {
   appId: "1:670247607539:web:8201c606ff6d223d1b2b86"
 };
 
+// Khởi tạo Firebase kiểu cũ cho chắc chắn
 firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
-let user = "", side = "";
+var db = firebase.database();
+var user = "", side = "";
 
 function login() {
     user = document.getElementById("uname").value.trim();
-    if(!user) return alert("Nhập tên đã ní!");
+    if(!user) { alert("Nhập tên đã ní!"); return; }
     
-    // Lưu tiền máy cục bộ 10k xu
     if(!localStorage.getItem(user)) localStorage.setItem(user, 10000);
     
     document.getElementById("login-box").style.display = "none";
     document.getElementById("game-box").style.display = "block";
     document.getElementById("n").innerText = user;
     
-    // Kiểm tra quyền Admin
     if(user.toLowerCase() === "admin") {
         document.getElementById("admin-panel").style.display = "block";
     }
@@ -86,65 +85,65 @@ function login() {
 }
 
 function updateUI() { 
-    let money = localStorage.getItem(user) || 0;
+    var money = localStorage.getItem(user) || 0;
     document.getElementById("m").innerText = parseInt(money).toLocaleString(); 
 }
 
 function dat(s) { side = s; alert("Đã đặt: " + s.toUpperCase()); }
 
 function xoc() {
-    const d1 = Math.floor(Math.random()*6)+1;
-    const d2 = Math.floor(Math.random()*6)+1;
-    const d3 = Math.floor(Math.random()*6)+1;
+    var d1 = Math.floor(Math.random()*6)+1;
+    var d2 = Math.floor(Math.random()*6)+1;
+    var d3 = Math.floor(Math.random()*6)+1;
     db.ref('shaking').set({ st: "xoc", d: [d1, d2, d3] });
 }
 
 function mo() { db.ref('shaking/st').set("mo"); }
 
 function buff() {
-    let t = document.getElementById("target").value.trim();
-    let a = parseInt(document.getElementById("buff-amt").value);
+    var t = document.getElementById("target").value.trim();
+    var a = parseInt(document.getElementById("buff-amt").value);
     if(t && a) {
         db.ref('buffs/' + t).set({ amount: a, t: Date.now() });
-        alert("Đã bơm tiền cho " + t);
+        alert("Đã bơm tiền!");
     }
 }
 
 function listenServer() {
-    db.ref('shaking').on('value', (s) => {
-        const data = s.val(); if(!data) return;
-        const b = document.getElementById("bat");
+    db.ref('shaking').on('value', function(snapshot) {
+        var data = snapshot.val(); 
+        if(!data) return;
+        var b = document.getElementById("bat");
         if(data.st === "xoc") {
             b.classList.remove("open");
             document.getElementById("st").innerText = "ĐANG XÓC ĐĨA...";
             document.getElementById("res").innerText = "?";
-            // CHỈ ADMIN MỚI THẤY SOI KẾT QUẢ
             if(user.toLowerCase() === "admin") {
-                let sum = data.d[0] + data.d[1] + data.d[2];
-                let kq = sum >= 11 ? "TÀI" : "XỈU";
+                var sum = data.d[0] + data.d[1] + data.d[2];
+                var kq = sum >= 11 ? "TÀI" : "XỈU";
                 document.getElementById("soi-kq").innerText = "SOI: " + kq + " (" + sum + ")";
             }
         } else {
             b.classList.add("open");
-            let sum = data.d[0] + data.d[1] + data.d[2];
-            let res = sum >= 11 ? "Tai" : "Xiu";
+            var sum = data.d[0] + data.d[1] + data.d[2];
+            var res = sum >= 11 ? "Tai" : "Xiu";
             document.getElementById("res").innerText = sum;
             document.getElementById("st").innerText = res.toUpperCase();
             if(user.toLowerCase() === "admin") document.getElementById("soi-kq").innerText = "";
             
             if(side !== "") {
-                let cuoc = parseInt(document.getElementById("cuoc").value) || 0;
-                let money = parseInt(localStorage.getItem(user));
+                var cuoc = parseInt(document.getElementById("cuoc").value) || 0;
+                var money = parseInt(localStorage.getItem(user));
                 localStorage.setItem(user, side === res ? money + cuoc : money - cuoc);
                 side = ""; updateUI();
             }
         }
     });
 
-    db.ref('buffs/' + user).on('value', (s) => {
-        let data = s.val();
+    db.ref('buffs/' + user).on('value', function(snapshot) {
+        var data = snapshot.val();
         if(data) {
-            let money = parseInt(localStorage.getItem(user));
+            var money = parseInt(localStorage.getItem(user));
             localStorage.setItem(user, money + data.amount);
             updateUI();
             db.ref('buffs/' + user).remove();
